@@ -1,4 +1,4 @@
-# Meeting Minutes: Open Visualization Collaboration Space
+# Meeting Minutes: Open Visualization Working Group
 Date: January 19, 2023
 
 ## Agenda
