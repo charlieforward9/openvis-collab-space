@@ -41,11 +41,25 @@ The workflow monitors releases from these repos. Update `.github/workflows/post-
 
 ## Stretch Goal — Website Auto-Update
 
-After each meeting, automatically open a PR on [openjs-foundation/open-visualization](https://github.com/openjs-foundation/open-visualization) to add the meeting to the blog/news section.
+After each meeting, the workflow also opens a PR on [openjs-foundation/open-visualization](https://github.com/openjs-foundation/open-visualization) prepending an entry to `content/news.json`:
 
-- [ ] Audit the website repo structure to determine the blog/news content format
-- [ ] Add a `WEBSITE_PAT` secret (Personal Access Token with `repo` scope on `open-visualization`) to this repo
-- [ ] Extend the workflow with a step that opens a PR on the website repo containing a generated blog stub from the meeting notes
+```json
+{
+  "publication": "OpenVis Bi-Weekly",
+  "date": "Mar 5, 2026",
+  "title": "Meeting Notes – 2026-03-05",
+  "url": "<GitHub Discussion URL>",
+  "image": "/logo-color.svg"
+}
+```
+
+This makes each meeting immediately visible on [openvisualization.org](https://www.openvisualization.org) and indexable by web search / AI agents.
+
+### Prerequisite
+
+- [ ] Add **`WEBSITE_PAT`** secret to **this repo** — a [Personal Access Token](https://github.com/settings/tokens) with `repo` scope on `openjs-foundation/open-visualization`
+
+Once the secret is present, the `update-website` job in the workflow activates automatically.
 
 ---
 
