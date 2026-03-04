@@ -1,6 +1,6 @@
-# Open Visualization Collaboration Space
+# Open Visualization Working Group
 
-The Open Visualization Collaboration Space “OpenVis” is a forum within the OpenJS Foundation to neutrally govern comprehensive and widely adopted visualization libraries based on JavaScript and WebGL.
+The Open Visualization Working Group “OpenVis” is a forum within the OpenJS Foundation to neutrally govern comprehensive and widely adopted visualization libraries based on JavaScript and WebGL.
 
 Members of OpenVis help other developers, data scientists, and visualization specialists improve GPU-accelerated visualization software. We do this through an open governance model that encourages participation and technical contribution, and by providing a framework for long term stewardship by a variety of stakeholders. Check out [our membership page](https://github.com/openjs-foundation/openvis-collab-space/blob/main/join.md) if you're interested in becoming a member.
 
@@ -22,7 +22,7 @@ The purpose of this repository is to provide a central place for coordination an
 
 Interested parties can also [join our #open-visualization channel](https://communityinviter.com/apps/js-foundation/join-openjs-foundation-on-slack) on Slack.
 
-## Collaboration Space Members
+## Working Group Members
 
 * Chris Gervang ([@chrisgervang](https://github.com/chrisgervang))
 * Ib Green ([@ibgreen](https://github.com/ibgreen))
