@@ -1,0 +1,140 @@
+name: Post Meeting Notes
+
+# Triggered when a dated meeting notes file is merged into main.
+# Automatically:
+#   1. Collects releases from all OpenVis project repos over the past 15 days
+#   2. Posts a GitHub Discussion under the "Meeting Notes" category
+#   3. Notifies #open-visualization on Slack with the Discussion link
+#
+# Prerequisites (one-time setup by repo admin):
+#   - Enable GitHub Discussions in repo Settings → General → Features
+#   - Create a "Meeting Notes" discussion category (Announcements type)
+#   - Add SLACK_WEBHOOK secret in repo Settings → Secrets and variables → Actions
+
+on:
+  push:
+    branches: [main]
+    paths: ['meetings/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].md']
+
+jobs:
+  post-notes:
+    runs-on: ubuntu-latest
+    permissions:
+      discussions: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Create discussion with release summary
+        id: post
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+
+            // 1. Find the newly merged meeting file
+            const diff = execSync('git diff --name-only HEAD~1 HEAD', { encoding: 'utf-8' });
+            const meetingFile = diff.split('\n')
+              .map(f => f.trim())
+              .find(f => /^meetings\/\d{4}-\d{2}-\d{2}\.md$/.test(f));
+
+            if (!meetingFile) {
+              core.info('No dated meeting file detected — skipping.');
+              return;
+            }
+
+            const date = meetingFile.replace('meetings/', '').replace('.md', '');
+            const notes = fs.readFileSync(meetingFile, 'utf-8');
+
+            // 2. Collect releases from all OpenVis project repos (past 15 days)
+            // Update this list as projects join or leave OpenVis.
+            const REPOS = [
+              { owner: 'visgl',           repo: 'deck.gl',     label: 'deck.gl' },
+              { owner: 'keplergl',        repo: 'kepler.gl',   label: 'kepler.gl' },
+              { owner: 'cosmosgl',        repo: 'graph',       label: 'cosmos.gl' },
+              { owner: 'perspective-dev', repo: 'perspective', label: 'perspective' },
+              { owner: 'GeoDaCenter',     repo: 'geoda',       label: 'geoda.ai' },
+            ];
+
+            const since = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+            let releasesMd = '---\n\n## Recent Releases\n\n';
+            let anyReleases = false;
+
+            for (const { owner, repo, label } of REPOS) {
+              try {
+                const { data } = await github.rest.repos.listReleases({ owner, repo, per_page: 10 });
+                const recent = data.filter(
+                  r => !r.draft && !r.prerelease && new Date(r.published_at) > since
+                );
+                if (recent.length) {
+                  anyReleases = true;
+                  releasesMd += `**[${label}](https://github.com/${owner}/${repo})**\n`;
+                  for (const r of recent) {
+                    const name = r.name && r.name !== r.tag_name ? ` — ${r.name}` : '';
+                    releasesMd += `- [\`${r.tag_name}\`](${r.html_url})${name}\n`;
+                  }
+                  releasesMd += '\n';
+                }
+              } catch (e) {
+                core.warning(`Could not fetch ${owner}/${repo} releases: ${e.message}`);
+              }
+            }
+
+            if (!anyReleases) releasesMd += '_No new releases since the last meeting._\n';
+
+            // 3. Create the GitHub Discussion
+            const { repository } = await github.graphql(`
+              query {
+                repository(owner: "openjs-foundation", name: "openvis-collab-space") {
+                  id
+                  discussionCategories(first: 20) { nodes { id name } }
+                }
+              }
+            `);
+
+            const category = repository.discussionCategories.nodes
+              .find(c => c.name === 'Meeting Notes');
+
+            if (!category) {
+              core.setFailed(
+                'No "Meeting Notes" discussion category found. ' +
+                'Create it in repo Settings → Discussions before merging meeting notes.'
+              );
+              return;
+            }
+
+            const { createDiscussion } = await github.graphql(
+              `mutation Create($repoId: ID!, $catId: ID!, $title: String!, $body: String!) {
+                createDiscussion(input: {
+                  repositoryId: $repoId, categoryId: $catId, title: $title, body: $body
+                }) {
+                  discussion { url }
+                }
+              }`,
+              {
+                repoId: repository.id,
+                catId:  category.id,
+                title:  `Meeting Notes \u2013 ${date}`,
+                body:   `${notes}\n\n${releasesMd}`,
+              }
+            );
+
+            const { url } = createDiscussion.discussion;
+            core.setOutput('url', url);
+            core.info(`Discussion posted: ${url}`);
+
+      - name: Notify Slack
+        if: steps.post.outputs.url != ''
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: open-visualization
+          SLACK_COLOR: '#00c2a8'
+          SLACK_TITLE: 'OpenVis Bi-Weekly — Meeting Notes Posted'
+          SLACK_MESSAGE: "Notes + recent releases from today's meeting: ${{ steps.post.outputs.url }}"
+          SLACK_FOOTER: openvis-collab-space
+          MSG_MINIMAL: false

@@ -14,11 +14,12 @@ Openly develop transformative, high performance visualization frameworks for the
 The purpose of this repository is to provide a central place for coordination and documentation around visualization practices and resources for the JavaScript community.
 
 ### Pages
-- [Meeting Notes](https://github.com/openjs-foundation/openvis-collab-space/tree/main/meetings)
+- [Meeting Notes](https://github.com/openjs-foundation/openvis-collab-space/tree/main/meetings) — bi-weekly notes, slides, and release summaries (auto-posted to [Discussions](https://github.com/openjs-foundation/openvis-collab-space/discussions))
 - [Media](https://github.com/openjs-foundation/openvis-collab-space/blob/main/media.md)
 - [Ways to Contribute](https://github.com/openjs-foundation/openvis-collab-space/blob/main/contribute.md)
 - [Membership](https://github.com/openjs-foundation/openvis-collab-space/blob/main/join.md)
 - [Best Practices](https://github.com/openjs-foundation/openvis-collab-space/blob/main/best-practices.md)
+- [Roadmap](./ROADMAP.md)
 
 Interested parties can also [join our #open-visualization channel](https://communityinviter.com/apps/js-foundation/join-openjs-foundation-on-slack) on Slack.
 
@@ -30,9 +31,9 @@ Interested parties can also [join our #open-visualization channel](https://commu
 * Xiaoji Chen ([@Pessimistress](https://github.com/Pessimistress))
 * Alberto Asuero ([@alasarr](https://github.com/alasarr))
 
-## In-Flight Intiatives
+## In-Flight Initiatives
 
-TBD
+See [ROADMAP.md](./ROADMAP.md) for the current automation roadmap and content backlog.
 
 
 ## Links & Resources
